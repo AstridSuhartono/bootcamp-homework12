@@ -1,30 +1,35 @@
+
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 //var query = require("query.js");
 const cTable = require('console.table');
 
+// ==== CREATE THE CONNECTION INFO FOR MYSQL ====
 var connection = mysql.createConnection({
     host: "localhost",
 
     // Your port; if not 3306
     port: process.env.PORT || 3306,
 
-    // Your username
+    // Your username for mysql 
     user: "root",
 
-    // Your password
+    // Your password for mysql
     password: "password",
+
     database: "companyDB"
 });
 
+// ==== CONNECT TO MYSQL SERVER AND DATABASE ====
 connection.connect(function (err) {
     if (err) throw err;
     console.log('connected as id ' + connection.threadId);
+    console.log("Welcome to the employees tracker application!");
     start();
 });
 
+// ==== FUNCTION TO PROMPT USER WHICH ACTION THEY WANT TO DO ====
 function start() {
-    console.log("Welcome to the employees tracker application!");
     inquirer.prompt(
         {
             type: "list",
@@ -52,7 +57,25 @@ function start() {
             }
         });
 }
+// ==== FUNCTION TO VIEW DATA IN THE DATABASE ====
+function viewCase() {
+    inquirer.prompt({
+        type: "list",
+        name: "viewcase",
+        message: "Which table would you like to view [department], [role], or [employee]?",
+        choices: ["department", "role", "employee", "cancel"]
+    })
+        .then(function (answer) {
+            if (answer.viewcase === "cancel") {
+                start();
+            }
+            else {
+                viewQuery(answer.viewcase);
+            }
+        });
+}
 
+// ==== FUNCTION TO INSERT DATA INTO THE DATABASE ====
 function addCase() {
     inquirer.prompt(
         {
@@ -118,7 +141,8 @@ function addCase() {
                         name: "manager",
                         message: "Who is the manager? (enter the manager id number)",
                         default: null
-                    }])
+                    }
+                ])
                     .then(function (answer) {
                         addEmployeeQuery(answer.firstname, answer.lastname, answer.role, answer.manager);
                     });
@@ -130,7 +154,19 @@ function addCase() {
 }
 
 
+
+
 //TODO create function to validate the input from inquirer both string max 30 chars and number (int and decimal)
+
+
+// ==== QUERIES FUNCTIONS ====
+function viewQuery(table){
+    connection.query("SELECT * FROM " + table, function(err,results){ 
+        if (err) throw err;
+        console.table(results);
+        start();
+    });
+}
 
 function addDeptQuery(name) {
     connection.query("INSERT INTO department SET ?", { name: name }, function (err) {
