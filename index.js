@@ -188,13 +188,7 @@ function updateCase() {
                             {
                                 type: "list",
                                 name: "choice",
-                                choices: function () {
-                                    let choiceArray = [];
-                                    for (var i = 0; i < results.length; i++) {
-                                        choiceArray.push(results[i].id);
-                                    }
-                                    return choiceArray;
-                                },
+                                choices: renderChoices(results),
                                 message: "Which employee id has role change?"
                             },
                             {
@@ -205,13 +199,8 @@ function updateCase() {
                             }
                         ])
                             .then(function (answer) {
-                                let chosenItem;
-                                for (var i = 0; i < results.length; i++) {
-                                    if (results[i].id === answer.choice) {
-                                        chosenItem = results[i];
-                                    }
-                                }
-                                updateRoleQuery(chosenItem.id, answer.role);
+                                let chosenItem = setDataChosen(answer, results);
+                                updateRoleQuery(answer.role, chosenItem.id);
                             });
                     }
                     else if (answer.updatecase === "manager") {
@@ -219,13 +208,7 @@ function updateCase() {
                             {
                                 type: "list",
                                 name: "choice",
-                                choices: function () {
-                                    let choiceArray = [];
-                                    for (var i = 0; i < results.length; i++) {
-                                        choiceArray.push(results[i].id);
-                                    }
-                                    return choiceArray;
-                                },
+                                choices: renderChoices(results),
                                 message: "Which employee id to update the manager?"
                             },
                             {
@@ -236,12 +219,7 @@ function updateCase() {
                             }
                         ])
                             .then(function (answer) {
-                                let chosenItem;
-                                for (var i = 0; i < results.length; i++) {
-                                    if (results[i].id === answer.choice) {
-                                        chosenItem = results[i];
-                                    }
-                                }
+                                let chosenItem = setDataChosen(answer, results);
                                 updateManagerQuery(answer.manager, chosenItem.id);
                             });
                     }
@@ -251,8 +229,32 @@ function updateCase() {
 }
 
 // ==== FUNCTION TO DELETE DATA IN DATABASE ====
-function deleteCase(){
-    
+function deleteCase() {
+    inquirer.prompt({
+        type: "list",
+        name: "deletecase",
+        message: "Do you want to delete [department], [role] or [employee]?",
+        choices: ["department", "role", "employee", "cancel"]
+    })
+        .then(function (answer) {
+            if (answer.deletecase === "department") {
+                deleteDeptQuery();
+            }
+        });
+
+
+    connection.query(
+        "DELETE FROM products WHERE ?",
+        {
+            flavor: "strawberry"
+        },
+        function (err, res) {
+            if (err) throw err;
+            console.log(res.affectedRows + " products deleted!\n");
+            // Call readProducts AFTER the DELETE completes
+            readProducts();
+        }
+    );
 }
 
 // ==== VALIDATION FUNCTIONS ====
@@ -269,6 +271,26 @@ function validateLengthInput(value) {
         return true;
     }
     return `Please enter a value of less than 31 characters`;
+}
+
+
+// ==== HELPER FUNCTIONS ====
+function renderChoices(results) {
+    let choiceArray = [];
+    for (var i = 0; i < results.length; i++) {
+        choiceArray.push(results[i].id);
+    }
+    return choiceArray;
+}
+
+function setDataChosen(answer, results) {
+    let chosenItem;
+    for (var i = 0; i < results.length; i++) {
+        if (results[i].id === answer.choice) {
+            chosenItem = results[i];
+        }
+    }
+    return chosenItem;
 }
 
 // ==== QUERIES FUNCTIONS ====
