@@ -34,23 +34,38 @@ function start() {
         {
             type: "list",
             name: "maincase",
-            message: "Which functionality would you like to choose [ADD] , [VIEW] , [UPDATE], or [DELETE]?",
-            choices: ["ADD", "VIEW", "UPDATE", "DELETE", "EXIT"]
+            message: "Which functionality would you like to choose?",
+            choices: ["ADD DATA", "VIEW DATA", "UPDATE DATA", "DELETE DATA", "VIEW EMPLOYEES BY MANAGER", "DEPARTMENT UTILISED BUDGET", "EXIT"]
         })
         .then(function (answer) {
             // based on their answer, call the related functions
-            if (answer.maincase === "ADD") {
+            // switch(answer){
+            //     case "ADD DATA": addCase();
+            //     case "VIEW DATA": viewCase();
+            //     case "UPDATE DATA": updateCase();
+            //     case "DELETE DATA": deleteCase();
+            //     default: 
+            //     console.log("Exit the application.");
+            //     connection.end();      
+            // }
+            if (answer.maincase === "ADD DATA") {
                 addCase();
             }
-            else if (answer.maincase === "VIEW") {
+            else if (answer.maincase === "VIEW DATA") {
                 viewCase();
             }
-            else if (answer.maincase === "UPDATE") {
+            else if (answer.maincase === "UPDATE DATA") {
                 console.log("INFO: change in role id or manager id must be number")
                 updateCase();
             }
-            else if (answer.maincase === "DELETE") {
+            else if (answer.maincase === "DELETE DATA") {
                 deleteCase();
+            }
+            else if (answer.maincase === "VIEW EMPLOYEES BY MANAGER") {
+                viewEmployeeByManager();
+            }
+            else if (answer.maincase === "DEPARTMENT UTILISED BUDGET") {
+                utilisedBudget();
             }
             else {
                 console.log("Exit the application.")
@@ -246,12 +261,12 @@ function deleteCase() {
                         choices: renderChoices(results),
                         message: "Which department id to delete?"
                     })
-                    .then(function (answer){
-                        deleteDeptQuery(answer.choice);
-                    });
-                }); 
+                        .then(function (answer) {
+                            deleteDeptQuery(answer.choice);
+                        });
+                });
             }
-            else if (answer.deletecase === "role"){
+            else if (answer.deletecase === "role") {
                 connection.query("SELECT * FROM role", function (err, results) {
                     if (err) throw err;
                     inquirer.prompt({
@@ -260,12 +275,12 @@ function deleteCase() {
                         choices: renderChoices(results),
                         message: "Which role id to delete?"
                     })
-                    .then(function (answer){
-                        deleteRoleQuery(answer.choice);
-                    });
-                }); 
+                        .then(function (answer) {
+                            deleteRoleQuery(answer.choice);
+                        });
+                });
             }
-            else if (answer.deletecase === "employee"){
+            else if (answer.deletecase === "employee") {
                 connection.query("SELECT * FROM employee", function (err, results) {
                     if (err) throw err;
                     inquirer.prompt({
@@ -274,12 +289,43 @@ function deleteCase() {
                         choices: renderChoices(results),
                         message: "Which employee id to delete?"
                     })
-                    .then(function (answer){
-                        deleteEmployeeQuery(answer.choice);
-                    });
-                }); 
+                        .then(function (answer) {
+                            deleteEmployeeQuery(answer.choice);
+                        });
+                });
+            }
+            else {
+                start();
             }
         });
+}
+
+// ==== EXTRA FUNCTIONS ====
+function viewEmployeeByManager() {
+    connection.query("SELECT manager_id FROM employee WHERE manager_id IS NOT NULL", function (err, results) {
+        if (err) throw err;
+        inquirer.prompt({
+            type: "list",
+            name: "managerid",
+            message: "Under which manager id would you like to get employees from?",
+            choices: function () {
+                let choiceArray = [];
+                for (var i = 0; i < results.length; i++) {
+                    choiceArray.push(results[i].manager_id);
+                }
+                return choiceArray;
+            }
+        })
+            .then(function (answer) {
+                employeeByManagerQuery(answer.managerid);
+            });
+    });
+}
+
+
+function utilisedBudget() {
+    console.log("utilised budget per department function is trigerred");
+    start();
 }
 
 // ==== VALIDATION FUNCTIONS ====
@@ -403,6 +449,14 @@ function deleteEmployeeQuery(selectedId) {
         if (err) throw err;
         console.log(query.sql);
         console.log(results.affectedRows + " employee deleted!\n");
+        start();
+    });
+}
+
+function employeeByManagerQuery(managerId) {
+    connection.query("SELECT id, first_name, last_name, role_id FROM employee WHERE manager_id = ?", managerId, function (err, results) {
+        if (err) throw err;
+        console.table(results);
         start();
     });
 }
