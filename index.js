@@ -238,23 +238,48 @@ function deleteCase() {
     })
         .then(function (answer) {
             if (answer.deletecase === "department") {
-                deleteDeptQuery();
+                connection.query("SELECT * FROM department", function (err, results) {
+                    if (err) throw err;
+                    inquirer.prompt({
+                        type: "list",
+                        name: "choice",
+                        choices: renderChoices(results),
+                        message: "Which department id to delete?"
+                    })
+                    .then(function (answer){
+                        deleteDeptQuery(answer.choice);
+                    });
+                }); 
+            }
+            else if (answer.deletecase === "role"){
+                connection.query("SELECT * FROM role", function (err, results) {
+                    if (err) throw err;
+                    inquirer.prompt({
+                        type: "list",
+                        name: "choice",
+                        choices: renderChoices(results),
+                        message: "Which role id to delete?"
+                    })
+                    .then(function (answer){
+                        deleteRoleQuery(answer.choice);
+                    });
+                }); 
+            }
+            else if (answer.deletecase === "employee"){
+                connection.query("SELECT * FROM employee", function (err, results) {
+                    if (err) throw err;
+                    inquirer.prompt({
+                        type: "list",
+                        name: "choice",
+                        choices: renderChoices(results),
+                        message: "Which employee id to delete?"
+                    })
+                    .then(function (answer){
+                        deleteEmployeeQuery(answer.choice);
+                    });
+                }); 
             }
         });
-
-
-    connection.query(
-        "DELETE FROM products WHERE ?",
-        {
-            flavor: "strawberry"
-        },
-        function (err, res) {
-            if (err) throw err;
-            console.log(res.affectedRows + " products deleted!\n");
-            // Call readProducts AFTER the DELETE completes
-            readProducts();
-        }
-    );
 }
 
 // ==== VALIDATION FUNCTIONS ====
@@ -351,6 +376,33 @@ function updateManagerQuery(updatedManager, selectedId) {
     let query = connection.query("UPDATE EMPLOYEE SET ? WHERE ?", updatedEmployee, function (err) {
         if (err) throw err;
         console.log(query.sql);
+        start();
+    });
+}
+
+function deleteDeptQuery(selectedId) {
+    let query = connection.query("DELETE FROM department WHERE ?", { id: selectedId }, function (err, results) {
+        if (err) throw err;
+        console.log(query.sql);
+        console.log(results.affectedRows + " department deleted!\n");
+        start();
+    });
+}
+
+function deleteRoleQuery(selectedId) {
+    let query = connection.query("DELETE FROM role WHERE ?", { id: selectedId }, function (err, results) {
+        if (err) throw err;
+        console.log(query.sql);
+        console.log(results.affectedRows + " role deleted!\n");
+        start();
+    });
+}
+
+function deleteEmployeeQuery(selectedId) {
+    let query = connection.query("DELETE FROM employee WHERE ?", { id: selectedId }, function (err, results) {
+        if (err) throw err;
+        console.log(query.sql);
+        console.log(results.affectedRows + " employee deleted!\n");
         start();
     });
 }
