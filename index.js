@@ -46,6 +46,7 @@ function start() {
                 viewCase();
             }
             else if (answer.maincase === "UPDATE") {
+                console.log("INFO: change in role id or manager id must be number")
                 updateCase();
             }
             else if (answer.maincase === "DELETE") {
@@ -86,33 +87,38 @@ function addCase() {
         })
         .then(function (answer) {
             if (answer.addcase === "department") {
+                console.log("INFO: department name must be less than 31 characters");
                 inquirer.prompt(
                     {
                         type: "input",
                         name: "deptname",
-                        message: "What is the department name?"
+                        message: "What is the department name?",
+                        validate: validateLengthInput
                     })
                     .then(function (answer) {
                         addDeptQuery(answer.deptname);
                     });
             }
             else if (answer.addcase === "role") {
-                //TODO add function to check if department data is not 0
+                console.log("INFO: salary and department id must be in number, title must be less than 31 characters");
                 inquirer.prompt([
                     {
                         type: "input",
                         name: "title",
-                        message: "What is the role title?"
+                        message: "What is the role title?",
+                        validate: validateLengthInput
                     },
                     {
                         type: "input",
                         name: "salary",
-                        message: "How much is the salary?"
+                        message: "How much is the salary?",
+                        validate: validateNumberInput
                     },
                     {
                         type: "input",
                         name: "department",
-                        message: "which department it belongs to?"
+                        message: "which department id it belongs to?",
+                        validate: validateNumberInput
                     }
                 ])
                     .then(function (answer) {
@@ -120,27 +126,30 @@ function addCase() {
                     });
             }
             else if (answer.addcase === "employee") {
-                //TODO add function to check if role data is not 0
+                console.log("INFO: role and manager id must be in number, other information must be less than 31 characters");
                 inquirer.prompt([
                     {
                         type: "input",
                         name: "firstname",
-                        message: "What is the employee first name?"
+                        message: "What is the employee first name?",
+                        validate: validateLengthInput
                     },
                     {
                         type: "input",
                         name: "lastname",
-                        message: "What is the employee last name?"
+                        message: "What is the employee last name?",
+                        validate: validateLengthInput
                     },
                     {
                         type: "input",
                         name: "role",
-                        message: "what is the employee role? (enter the role id number)"
+                        message: "what is the employee role? (enter the role id number)",
+                        validate: validateNumberInput
                     },
                     {
                         type: "input",
                         name: "manager",
-                        message: "Who is the manager? (enter the manager id number)",
+                        message: "Who is the manager? (enter the manager id number or leave empty if no manager to report to)",
                         default: ""
                     }
                 ])
@@ -191,7 +200,8 @@ function updateCase() {
                             {
                                 type: "input",
                                 name: "role",
-                                message: "What is the new role id of the employee?"
+                                message: "What is the new role id of the employee?",
+                                validate: validateNumberInput
                             }
                         ])
                             .then(function (answer) {
@@ -205,16 +215,61 @@ function updateCase() {
                             });
                     }
                     else if (answer.updatecase === "manager") {
-
+                        inquirer.prompt([
+                            {
+                                type: "list",
+                                name: "choice",
+                                choices: function () {
+                                    let choiceArray = [];
+                                    for (var i = 0; i < results.length; i++) {
+                                        choiceArray.push(results[i].id);
+                                    }
+                                    return choiceArray;
+                                },
+                                message: "Which employee id to update the manager?"
+                            },
+                            {
+                                type: "input",
+                                name: "manager",
+                                message: "What is the new manager id of the employee?",
+                                validate: validateNumberInput
+                            }
+                        ])
+                            .then(function (answer) {
+                                let chosenItem;
+                                for (var i = 0; i < results.length; i++) {
+                                    if (results[i].id === answer.choice) {
+                                        chosenItem = results[i];
+                                    }
+                                }
+                                updateManagerQuery(answer.manager, chosenItem.id);
+                            });
                     }
                 });
             }
         });
 }
 
+// ==== FUNCTION TO DELETE DATA IN DATABASE ====
+function deleteCase(){
+    
+}
 
-//TODO create function to validate the input from inquirer both string max 30 chars and number (int and decimal)
+// ==== VALIDATION FUNCTIONS ====
+function validateNumberInput(value) {
+    var num = value.match(/^[0-9]+$/);
+    if (num) {
+        return true;
+    }
+    return `Please enter a valid number`;
+}
 
+function validateLengthInput(value) {
+    if (value.length < 31) {
+        return true;
+    }
+    return `Please enter a value of less than 31 characters`;
+}
 
 // ==== QUERIES FUNCTIONS ====
 function viewQuery(table) {
@@ -260,8 +315,8 @@ function addEmployeeQuery(firstName, lastName, role) {
     });
 }
 
-function updateRoleQuery(selectedId, updatedRole) {
-    const updatedEmployee = [{ role_id: updatedRole}, { id: selectedId }];
+function updateRoleQuery(updatedRole, selectedId) {
+    const updatedEmployee = [{ role_id: updatedRole }, { id: selectedId }];
     let query = connection.query("UPDATE employee SET ? WHERE ?", updatedEmployee, function (err) {
         if (err) throw err;
         console.log(query.sql);
@@ -269,4 +324,11 @@ function updateRoleQuery(selectedId, updatedRole) {
     });
 }
 
-
+function updateManagerQuery(updatedManager, selectedId) {
+    const updatedEmployee = [{ manager_id: updatedManager }, { id: selectedId }];
+    let query = connection.query("UPDATE EMPLOYEE SET ? WHERE ?", updatedEmployee, function (err) {
+        if (err) throw err;
+        console.log(query.sql);
+        start();
+    });
+}
