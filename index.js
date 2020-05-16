@@ -1,11 +1,10 @@
 
-var mysql = require("mysql");
-var inquirer = require("inquirer");
-//var query = require("query.js");
+const mysql = require("mysql");
+const inquirer = require("inquirer");
 const cTable = require('console.table');
 
 // ==== CREATE THE CONNECTION INFO FOR MYSQL ====
-var connection = mysql.createConnection({
+const connection = mysql.createConnection({
     host: "localhost",
 
     // Your port; if not 3306
@@ -15,7 +14,7 @@ var connection = mysql.createConnection({
     user: "root",
 
     // Your password for mysql
-    password: "password",
+    password: "",
 
     database: "companyDB"
 });
@@ -39,15 +38,6 @@ function start() {
         })
         .then(function (answer) {
             // based on their answer, call the related functions
-            // switch(answer){
-            //     case "ADD DATA": addCase();
-            //     case "VIEW DATA": viewCase();
-            //     case "UPDATE DATA": updateCase();
-            //     case "DELETE DATA": deleteCase();
-            //     default: 
-            //     console.log("Exit the application.");
-            //     connection.end();      
-            // }
             if (answer.maincase === "ADD DATA") {
                 addCase();
             }
@@ -478,10 +468,11 @@ function employeeByManagerQuery(managerId) {
     });
 }
 
-function budgetPerDepartmentQuery(departmentId){
-    connection.query("SELECT d.name, SUM(r.salary) AS 'Total' FROM department d INNER JOIN role r ON d.id = r.department_Id WHERE d.id = ?", departmentId , function(err,results){
-        if (err) throw err;
-        console.table(results);
-        start();
-    });
+function budgetPerDepartmentQuery(departmentId) {
+    connection.query("SELECT d.name, SUM(r.salary) AS 'Total' FROM department d JOIN role r ON d.id = r.department_Id JOIN employee e ON r.id = e.role_id WHERE d.id = ?",
+        departmentId, function (err, results) {
+            if (err) throw err;
+            console.table(results);
+            start();
+        });
 }
