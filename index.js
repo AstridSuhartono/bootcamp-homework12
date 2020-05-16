@@ -325,7 +325,24 @@ function viewEmployeeByManager() {
 
 function utilisedBudget() {
     console.log("utilised budget per department function is trigerred");
-    start();
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+        inquirer.prompt({
+            type: "list",
+            name: "deptid",
+            message: "Which department to view total utilised budget?",
+            choices: function () {
+                let choiceArray = [];
+                for (var i = 0; i < results.length; i++) {
+                    choiceArray.push(results[i].id);
+                }
+                return choiceArray;
+            }
+        })
+            .then(function (answer) {
+                budgetPerDepartmentQuery(answer.deptid);
+            });
+    });
 }
 
 // ==== VALIDATION FUNCTIONS ====
@@ -455,6 +472,14 @@ function deleteEmployeeQuery(selectedId) {
 
 function employeeByManagerQuery(managerId) {
     connection.query("SELECT id, first_name, last_name, role_id FROM employee WHERE manager_id = ?", managerId, function (err, results) {
+        if (err) throw err;
+        console.table(results);
+        start();
+    });
+}
+
+function budgetPerDepartmentQuery(departmentId){
+    connection.query("SELECT d.name, SUM(r.salary) AS 'Total' FROM department d INNER JOIN role r ON d.id = r.department_Id WHERE d.id = ?", departmentId , function(err,results){
         if (err) throw err;
         console.table(results);
         start();
