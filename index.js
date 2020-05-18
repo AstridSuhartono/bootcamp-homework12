@@ -4,7 +4,7 @@ const inquirer = require("inquirer");
 const cTable = require('console.table');
 
 // ==== CREATE THE CONNECTION INFO FOR MYSQL ====
-const connection;
+let connection;
 
 if (process.env.JAWSDB_URL) {
     connection = mysql.createConnection(process.env.JAWSDB_URL);
