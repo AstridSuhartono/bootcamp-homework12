@@ -4,21 +4,26 @@ const inquirer = require("inquirer");
 const cTable = require('console.table');
 
 // ==== CREATE THE CONNECTION INFO FOR MYSQL ====
-const connection = mysql.createConnection({
-    host: "localhost",
+const connection;
 
-    // Your port; if not 3306
-    port: process.env.PORT || 3306,
+if (process.env.JAWSDB_URL) {
+    connection = mysql.createConnection(process.env.JAWSDB_URL);
+} else {
+    connection = mysql.createConnection({
+        host: "localhost",
 
-    // Your username for mysql 
-    user: "root",
+        // Your port; if not 3306
+        port: process.env.PORT || 3306,
 
-    // Your password for mysql
-    password: "password",
+        // Your username for mysql 
+        user: "root",
 
-    database: "companyDB"
-});
+        // Your password for mysql
+        password: "password",
 
+        database: "companyDB"
+    });
+};
 // ==== CONNECT TO MYSQL SERVER AND DATABASE ====
 connection.query = util.promisify(connection.query);
 connection.connect(function (err) {
