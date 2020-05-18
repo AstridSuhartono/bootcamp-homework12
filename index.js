@@ -1,4 +1,4 @@
-
+const util = require("util");
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require('console.table');
@@ -14,12 +14,13 @@ const connection = mysql.createConnection({
     user: "root",
 
     // Your password for mysql
-    password: "",
+    password: "password",
 
     database: "companyDB"
 });
 
 // ==== CONNECT TO MYSQL SERVER AND DATABASE ====
+connection.query = util.promisify(connection.query);
 connection.connect(function (err) {
     if (err) throw err;
     console.log('connected as id ' + connection.threadId);
