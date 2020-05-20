@@ -298,7 +298,7 @@ function deleteCase() {
 
 // ==== EXTRA FUNCTIONS ====
 function viewEmployeeByManager() {
-    connection.query("SELECT manager_id FROM employee WHERE manager_id IS NOT NULL", function (err, results) {
+    connection.query("SELECT DISTINCT manager_id FROM employee WHERE manager_id IS NOT NULL", function (err, results) {
         if (err) throw err;
         inquirer.prompt({
             type: "list",

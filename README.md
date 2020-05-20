@@ -17,6 +17,12 @@ An application that are able to view and manage the departments, roles, and empl
 * https://github.com/AstridSuhartono/bootcamp-homework12
 * https://astridsuhartono.github.io/bootcamp-homework12/
 
+
+### Link to Recorded Video
+
+Following is the link to the video of application being run:
+https://drive.google.com/file/d/1MaFTgV8F6KlwEn37qkbRRXbgia8Xcmbg/view
+
 ### How to Start
 
 **Build Instructions**
